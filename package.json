@@ -18,6 +18,7 @@
     "react-hot-toast": "^2.6.0",
     "react-use-measure": "^2.1.7",
     "react-webcam": "^7.2.0",
+    "remixicon": "^4.9.1",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
