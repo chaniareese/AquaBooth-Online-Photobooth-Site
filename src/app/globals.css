@@ -1,0 +1,62 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Positions";
+  src: url("/fonts/Positions.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-amber-50:  #FEF6E6;
+  --color-amber-100: #FBEDCC;
+  --color-amber-200: #F7DB99;
+  --color-amber-300: #F4C866;
+  --color-amber-400: #F0B633;
+  --color-amber-500: #ECA400;
+  --color-amber-600: #BD8300;
+  --color-amber-700: #8E6200;
+  --color-amber-800: #5E4200;
+  --color-amber-900: #181000;
+
+  --color-pacific-blue-50:  #E9F6F8;
+  --color-pacific-blue-100: #D1EDF0;
+  --color-pacific-blue-200: #A4DBE0;
+  --color-pacific-blue-300: #76C9D1;
+  --color-pacific-blue-400: #49B7C1;
+  --color-pacific-blue-500: #1BA5B2;
+  --color-pacific-blue-600: #16848E;
+  --color-pacific-blue-700: #10636B;
+  --color-pacific-blue-800: #0B4247;
+  --color-pacific-blue-900: #052124;
+  --color-pacific-blue-950: #031012;
+
+  --color-parchment-50:  #FEFDFD;
+  --color-parchment-100: #FCFBFA;
+  --color-parchment-200: #F9F6F5;
+  --color-parchment-300: #F5F2F1;
+  --color-parchment-400: #F2EDEC;
+  --color-parchment-500: #EFE9E7;
+  --color-parchment-600: #BFBAB9;
+  --color-parchment-700: #8F8C8B;
+  --color-parchment-800: #605D5C;
+  --color-parchment-900: #302F2E;
+  --color-parchment-950: #181717;
+
+  --font-display: "Positions", cursive;
+  --font-body: "Poppins", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #F2EDEC;
+  font-family: "Poppins", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
