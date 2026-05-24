@@ -6,9 +6,10 @@ interface ButtonProps {
   icon?: string
   type?: "button" | "submit"
   className?: string
+  disabled?: boolean
 }
 
-export default function Button({ children, onClick, icon, type = "button", className = "" }: ButtonProps) {
+export default function Button({ children, onClick, icon, type = "button", className = "", disabled = false }: ButtonProps) {
   return (
     <>
       <style>{`
@@ -20,20 +21,20 @@ export default function Button({ children, onClick, icon, type = "button", class
           position: relative;
           overflow: hidden;
           z-index: 1;
-          color: #1BA5B2;
+          color: #e8e8e8;
           padding: 0.7em 1.7em;
           cursor: pointer;
-          font-size: 18px;
-          border-radius: 0.5em;
-          background: #e8e8e8;
-          border: 1px solid #e8e8e8;
-          box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #FEFDFD;
+          font-size: 22px;
+          border-radius: 0;
+          background: #1BA5B2;
+          border: none;
+          box-shadow: 6px 6px 12px #c5c5c5;
           font-family: "Positions", cursive;
-          font-weight: 600;
+          font-weight: 500;
         }
         .aqua-button:active {
           color: #666;
-          box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+          box-shadow: inset 4px 4px 12px #c5c5c5;
         }
         .aqua-button:before {
           content: "";
@@ -57,15 +58,15 @@ export default function Button({ children, onClick, icon, type = "button", class
           top: 180%;
           width: 160%;
           height: 190%;
-          background-color: #1BA5B2;
+          background-color: #e8e8e8;
           border-radius: 50%;
           display: block;
           transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
           z-index: -1;
         }
         .aqua-button:hover {
-          color: #ffffff;
-          border: 1px solid #1BA5B2;
+          color: #1BA5B2;
+          border: none;
         }
         .aqua-button:hover:before {
           top: -35%;
@@ -74,14 +75,16 @@ export default function Button({ children, onClick, icon, type = "button", class
         }
         .aqua-button:hover:after {
           top: -45%;
-          background-color: #1BA5B2;
+          background-color: #e8e8e8;
           transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
         }
       `}</style>
       <button
         type={type}
         onClick={onClick}
+        disabled={disabled}
         className={`aqua-button ${className}`}
+          style={{ opacity: disabled ? 0.6 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
       >
         {icon && <i className={icon} />}
         {children}

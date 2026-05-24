@@ -38,7 +38,7 @@ export default function FloatingBubbles() {
           bottom: -120px;
           animation: bubbleRise var(--dur) ease-in infinite var(--delay);
           pointer-events: none;
-          z-index: 1;
+          z-index: 100;
         }
         @keyframes bubbleRise {
           0%   { transform: translateY(0) translateX(0px);   opacity: 0; }

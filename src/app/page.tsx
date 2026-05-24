@@ -4,7 +4,7 @@ import AquariumCard from "@/components/home/AquariumCard"
 
 export default function Home() {
   return (
-    <main className="min-h-screen relative bg-amber-50">
+    <main className="min-h-screen relative pacific-blue-50">
       <AnimatedFloor />
       <FloatingBubbles />
       <AquariumCard />

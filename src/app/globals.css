@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: "Positions";
-  src: url("/fonts/Positions.otf") format("opentype");
+  src: url("/fonts/PositionsByArixbored-Regular%20.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -57,7 +57,7 @@
 }
 
 body {
-  background-color: #F2EDEC;
+  background-color: #E9F6F8;
   font-family: "Poppins", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
