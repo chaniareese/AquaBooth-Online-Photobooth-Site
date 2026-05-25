@@ -59,6 +59,7 @@ export default function DesignerScreen() {
   const [draggingUid, setDraggingUid] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [showBackModal, setShowBackModal] = useState(false)
+  const [showDownloadModal, setShowDownloadModal] = useState(false)
 
   const getStripBounds = () => stripRef.current?.getBoundingClientRect() ?? null
 
@@ -217,18 +218,7 @@ export default function DesignerScreen() {
         document.body.removeChild(link)
         setTimeout(() => {
           URL.revokeObjectURL(url)
-          toast("Thanks for using Aquabooth by NayaDesigns! >⩊<.ᐟᯓ★ˎˊ˗", {
-            style: {
-              fontFamily: "Positions, cursive",
-              background: "#EFE9E7",
-              color: "#1BA5B2",
-              borderRadius: "0px",
-              fontSize: "20px",
-              width: "1800",
-              textAlign: "center",
-              border: "1px solid #BFBAB9",
-            },
-          })
+          setShowDownloadModal(true)
         }, 500)
       }, "image/png")
 
@@ -357,10 +347,14 @@ export default function DesignerScreen() {
           border-radius: 0;
           border: 2px solid #BFBAB9;
           padding: 32px;
-          max-width: 460px;
+          max-width: 600px;
           width: 90%;
           text-align: center;
           font-family: "Poppins", sans-serif;
+        }
+        .modal-btn {
+          font-size: 20px !important;
+          padding: 0.5em 1.4em !important;
         }
       `}</style>
 
@@ -580,6 +574,41 @@ export default function DesignerScreen() {
 
         <canvas ref={canvasRef} style={{ display: "none" }} />
 
+        {/* Download success modal */}
+        <AnimatePresence>
+          {showDownloadModal && (
+            <motion.div
+              className="modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="modal-box"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+              >
+                <h2 style={{ fontFamily: "Positions, cursive", color: "#16848E", fontSize: 24, marginBottom: 12 }}>
+                  {'Photo Downloaded! >⩊<.ᐟ'}
+                </h2>
+                <p style={{ color: "#605D5C", marginBottom: 36, fontSize: 15 }}>
+                  Thanks for using Aquabooth by NayaDesigns!<br />What would you like to do next?
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <button className="retake-link" onClick={() => setShowDownloadModal(false)}>
+                    <i className="ri-edit-line" />
+                    Continue Editing
+                  </button>
+                  <Button icon="ri-home-line" onClick={handleBackHome} className="modal-btn">
+                    Back to Home
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Back Home confirmation modal */}
         <AnimatePresence>
           {showBackModal && (
@@ -607,7 +636,7 @@ export default function DesignerScreen() {
                   <button className="retake-link" onClick={() => setShowBackModal(false)}>
                     Cancel
                   </button>
-                  <Button icon="ri-arrow-left-line" onClick={handleBackHome}>
+                  <Button icon="ri-arrow-left-line" onClick={handleBackHome} className="modal-btn">
                     Yes, Exit
                   </Button>
                 </div>
