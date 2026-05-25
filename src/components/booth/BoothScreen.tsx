@@ -12,6 +12,7 @@ import FloatingBubbles from "@/components/home/FloatingBubbles"
 
 const SLOT1 = { top: "11.9%", left: "6.85%", width: "86.3%", height: "39.5%" }
 const SLOT2 = { top: "52.6%", left: "6.95%", width: "86.3%", height: "39.5%" }
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 // 10 MB
 
 export default function BoothScreen() {
   const router = useRouter()
@@ -69,6 +70,7 @@ export default function BoothScreen() {
     if (!file) return
     const allowed = ["image/jpeg", "image/jpg", "image/png"]
     if (!allowed.includes(file.type)) return
+    if (file.size > MAX_UPLOAD_BYTES) return
     const reader = new FileReader()
     reader.onload = (ev) => {
       const result = ev.target?.result as string
