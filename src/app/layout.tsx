@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Aqua Booth",
   description: "An underwater-themed photo booth by NayaDesigns. Capture, decorate with stickers, and download your strip!",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
