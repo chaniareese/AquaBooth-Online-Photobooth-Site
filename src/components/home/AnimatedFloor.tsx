@@ -59,8 +59,16 @@ export default function AnimatedFloor() {
           left: -30%;
           width: 160%;
           height: 100%;
-          transform: perspective(800px) rotateX(50deg);
+          transform: perspective(clamp(300px, 65vw, 1000px)) rotateX(50deg);
           transform-origin: 50% 100%;
+        }
+        @media (max-width: 768px) {
+          .floor-wrapper {
+            height: 62%;
+          }
+          .floor-surface {
+            transform: perspective(clamp(300px, 80vh, 700px)) rotateX(45deg);
+          }
         }
         .floor-grid {
           width: 100%;

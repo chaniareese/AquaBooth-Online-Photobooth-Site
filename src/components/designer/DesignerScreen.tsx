@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback } from "react"
 import Image from "next/image"
-import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
 import { useBoothStore } from "@/store/boothStore"
 import { useRouter } from "next/navigation"
 import Button from "@/components/shared/Button"
@@ -13,19 +13,27 @@ const FRAME_H = 1748
 const SLOT1 = { x: 85,   y: 207.6, w: 1070, h: 690 }
 const SLOT2 = { x: 86.6, y: 918.6, w: 1070, h: 690 }
 
+// Bounds (as % of frame) covering both photo slots — stickers are constrained here
+const PHOTO_BOUNDS = {
+  xMin: (SLOT1.x / FRAME_W) * 100,
+  xMax: ((SLOT1.x + SLOT1.w) / FRAME_W) * 100,
+  yMin: (SLOT1.y / FRAME_H) * 100,
+  yMax: ((SLOT2.y + SLOT2.h) / FRAME_H) * 100,
+}
+
 const STICKERS = [
-  { id: "fish-orange",  src: "/assets/stickers/fish-orange.svg",    defaultSize: 60 },
-  { id: "fish-pink",    src: "/assets/stickers/fish-pink.svg",      defaultSize: 50 },
-  { id: "fish-purple",  src: "/assets/stickers/fish-purple.svg",    defaultSize: 50 },
-  { id: "fish-yellow",  src: "/assets/stickers/fish-yellow.svg",    defaultSize: 55 },
-  { id: "fish-green",   src: "/assets/stickers/fish-green.svg",     defaultSize: 55 },
-  { id: "seahorse",     src: "/assets/stickers/seahorse.svg",       defaultSize: 60 },
-  { id: "shell",        src: "/assets/stickers/shell.svg",          defaultSize: 60 },
-  { id: "starfish",     src: "/assets/stickers/starfish.svg",       defaultSize: 55 },
-  { id: "seaweed",      src: "/assets/stickers/seaweed.svg",        defaultSize: 100 },
-  { id: "bubble-white", src: "/assets/stickers/white-bubble.svg",   defaultSize: 0 },
-  { id: "bubble-color", src: "/assets/stickers/colored-bubble.svg", defaultSize: 0 },
-  { id: "remove",       src: "",                                     defaultSize: 0 },
+  { id: "fish-orange",  src: "/assets/stickers/fish-orange.svg",    defaultSize: 60,  vw: 332, vh: 170 },
+  { id: "fish-pink",    src: "/assets/stickers/fish-pink.svg",      defaultSize: 55,  vw: 332, vh: 170 },
+  { id: "fish-purple",  src: "/assets/stickers/fish-purple.svg",    defaultSize: 55,  vw: 332, vh: 170 },
+  { id: "fish-yellow",  src: "/assets/stickers/fish-yellow.svg",    defaultSize: 58,  vw: 332, vh: 170 },
+  { id: "fish-green",   src: "/assets/stickers/fish-green.svg",     defaultSize: 58,  vw: 332, vh: 170 },
+  { id: "seahorse",     src: "/assets/stickers/seahorse.svg",       defaultSize: 60,  vw: 174, vh: 310 },
+  { id: "shell",        src: "/assets/stickers/shell.svg",          defaultSize: 60,  vw: 248, vh: 195 },
+  { id: "starfish",     src: "/assets/stickers/starfish.svg",       defaultSize: 58,  vw: 206, vh: 216 },
+  { id: "seaweed",      src: "/assets/stickers/seaweed.svg",        defaultSize: 100,  vw: 211, vh: 306 },
+  { id: "bubble-white", src: "/assets/stickers/white-bubble.svg",   defaultSize: 0,   vw: 220, vh: 218 },
+  { id: "bubble-color", src: "/assets/stickers/colored-bubble.svg", defaultSize: 0,   vw: 220, vh: 218 },
+  { id: "remove",       src: "",                                     defaultSize: 0,   vw: 1,   vh: 1   },
 ]
 
 const BUBBLE_IDS = ["bubble-white", "bubble-color"]
@@ -33,10 +41,11 @@ const BUBBLE_IDS = ["bubble-white", "bubble-color"]
 interface PlacedSticker {
   uid: string
   src: string
-  x: number
-  y: number
-  size: number
+  x: number        // % of strip width
+  y: number        // % of strip height
+  sizePct: number  // % of strip width (bounding square)
   flipH: boolean
+  aspectRatio: number // vw / vh from viewBox
 }
 
 export default function DesignerScreen() {
@@ -49,21 +58,29 @@ export default function DesignerScreen() {
   const [selectedUid, setSelectedUid] = useState<string | null>(null)
   const [draggingUid, setDraggingUid] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [showBackModal, setShowBackModal] = useState(false)
 
   const getStripBounds = () => stripRef.current?.getBoundingClientRect() ?? null
 
   const handleAddSticker = (sticker: typeof STICKERS[0]) => {
     const isBubble = BUBBLE_IDS.includes(sticker.id)
-    const size = isBubble
-      ? 25 + Math.random() * 35
+    const rawSize = isBubble
+      ? 10 + Math.random() * 18
       : sticker.defaultSize
+    const stripW = stripRef.current?.offsetWidth || 520
+    // Store size as % of strip width so it scales correctly on export
+    const sizePct = (rawSize / stripW) * 100
+    // Size as % of strip height (for Y-axis clamping)
+    const sizePctH = sizePct * (FRAME_W / FRAME_H)
+
     const newSticker: PlacedSticker = {
       uid: `${sticker.id}-${Date.now()}`,
       src: sticker.src,
-      x: 30 + Math.random() * 30,
-      y: 20 + Math.random() * 30,
-      size,
+      x: PHOTO_BOUNDS.xMin + Math.random() * Math.max(0, PHOTO_BOUNDS.xMax - PHOTO_BOUNDS.xMin - sizePct),
+      y: PHOTO_BOUNDS.yMin + Math.random() * Math.max(0, PHOTO_BOUNDS.yMax - PHOTO_BOUNDS.yMin - sizePctH),
+      sizePct,
       flipH: false,
+      aspectRatio: sticker.vw / sticker.vh,
     }
     setStickers((prev) => [...prev, newSticker])
     setSelectedUid(newSticker.uid)
@@ -101,10 +118,14 @@ export default function DesignerScreen() {
     if (draggingUid !== uid) return
     const bounds = getStripBounds()
     if (!bounds) return
+    const s = stickers.find((st) => st.uid === uid)
+    if (!s) return
+    const sizeXPct = s.sizePct
+    const sizeYPct = s.sizePct * (bounds.width / bounds.height)
     const rawX = e.clientX - bounds.left - dragOffset.x
     const rawY = e.clientY - bounds.top - dragOffset.y
-    const xPct = Math.max(0, Math.min(100, (rawX / bounds.width) * 100))
-    const yPct = Math.max(0, Math.min(100, (rawY / bounds.height) * 100))
+    const xPct = Math.max(PHOTO_BOUNDS.xMin, Math.min(PHOTO_BOUNDS.xMax - sizeXPct, (rawX / bounds.width) * 100))
+    const yPct = Math.max(PHOTO_BOUNDS.yMin, Math.min(PHOTO_BOUNDS.yMax - sizeYPct, (rawY / bounds.height) * 100))
     setStickers((prev) =>
       prev.map((s) => s.uid === uid ? { ...s, x: xPct, y: yPct } : s)
     )
@@ -163,35 +184,54 @@ export default function DesignerScreen() {
       const frame = await loadImage("/assets/frame/strip-frame.png")
       ctx.drawImage(frame, 0, 0, FRAME_W, FRAME_H)
 
-      const stripBounds = getStripBounds()
-      const stripRenderedW = stripBounds?.width ?? 520
-      const scaleToFrame = FRAME_W / stripRenderedW
-
+      // Stickers — size is % of strip width, convert to frame pixels
       for (const sticker of stickers) {
         const img = await loadImage(sticker.src)
-        const sizeInFrame = sticker.size * scaleToFrame
+        const sizeInFrame = (sticker.sizePct / 100) * FRAME_W
         const xInFrame = (sticker.x / 100) * FRAME_W
         const yInFrame = (sticker.y / 100) * FRAME_H
+        // Preserve the sticker's natural aspect ratio so it isn't distorted
+        const aspect = sticker.aspectRatio || 1
+        const drawW = aspect >= 1 ? sizeInFrame : sizeInFrame * aspect
+        const drawH = aspect >= 1 ? sizeInFrame / aspect : sizeInFrame
+
         ctx.save()
         ctx.translate(xInFrame + sizeInFrame / 2, yInFrame + sizeInFrame / 2)
         if (sticker.flipH) ctx.scale(-1, 1)
-        ctx.drawImage(img, -sizeInFrame / 2, -sizeInFrame / 2, sizeInFrame, sizeInFrame)
+        ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH)
         ctx.restore()
       }
 
-      const link = document.createElement("a")
-      link.download = "aquabooth-strip.png"
-      link.href = canvas.toDataURL("image/png")
-      link.click()
+      // Blob download — toast fires after browser initiates download
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          toast.error("Something went wrong. Please try again.")
+          return
+        }
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.download = "aquabooth-nayadesigns.png"
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        setTimeout(() => {
+          URL.revokeObjectURL(url)
+          toast("Thanks for using Aquabooth by NayaDesigns! >⩊<.ᐟᯓ★ˎˊ˗", {
+            style: {
+              fontFamily: "Positions, cursive",
+              background: "#EFE9E7",
+              color: "#1BA5B2",
+              borderRadius: "0px",
+              fontSize: "20px",
+              width: "1800",
+              textAlign: "center",
+              border: "1px solid #BFBAB9",
+            },
+          })
+        }, 500)
+      }, "image/png")
 
-      toast("Thanks for using Aquabooth! 🐠", {
-        style: {
-          fontFamily: "Positions, cursive",
-          background: "#EFE9E7",
-          color: "#1BA5B2",
-          border: "1px solid #1BA5B2",
-        },
-      })
     } catch (err) {
       console.error("Download failed:", err)
       toast.error("Something went wrong. Please try again.")
@@ -203,9 +243,14 @@ export default function DesignerScreen() {
     router.push("/booth")
   }
 
+  const handleBackHome = () => {
+    resetPhotos()
+    router.push("/")
+  }
+
   return (
     <>
-      <Toaster position="bottom-center" />
+      <Toaster position="bottom-right" />
       <style>{`
         .sticker-grid-item {
           aspect-ratio: 1;
@@ -216,15 +261,15 @@ export default function DesignerScreen() {
           justify-content: center;
           cursor: pointer;
           transition: background 0.15s, transform 0.15s;
-          padding: 8px;
+          padding: 6px;
         }
         .sticker-grid-item:not(.remove-btn):hover {
           background: #1BA5B2;
           transform: scale(1.05);
         }
         .sticker-grid-item img {
-          width: 36px !important;
-          height: 36px !important;
+          width: 52px !important;
+          height: 52px !important;
           filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.20));
         }
         .sticker-grid-item:not(.remove-btn):hover img {
@@ -286,29 +331,61 @@ export default function DesignerScreen() {
           text-decoration: none;
         }
         .retake-link:hover { opacity: 0.75; }
+        .sticker-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          margin-bottom: 28px;
+        }
+        @media (max-width: 480px) {
+          .sticker-grid-item img {
+            width: 40px !important;
+            height: 40px !important;
+          }
+        }
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 50;
+        }
+        .modal-box {
+          background: #EFE9E7;
+          border-radius: 0;
+          border: 2px solid #BFBAB9;
+          padding: 32px;
+          max-width: 460px;
+          width: 90%;
+          text-align: center;
+          font-family: "Poppins", sans-serif;
+        }
       `}</style>
 
-      <main className="min-h-screen bg-parchment-400 relative">
+      <main className="min-h-screen bg-parchment-400 relative overflow-x-hidden">
 
-        <Link
-          href="/"
+        <button
+          onClick={() => setShowBackModal(true)}
           style={{
             position: "fixed", top: 20, left: 20, zIndex: 40,
             fontFamily: "Positions, cursive", color: "#1BA5B2", fontSize: 18,
             display: "flex", alignItems: "center", gap: 6,
+            background: "none", border: "none", cursor: "pointer", padding: 0,
           }}
         >
           <i className="ri-arrow-left-line" />
           Back Home
-        </Link>
+        </button>
 
-        <div className="flex items-center justify-center min-h-screen px-6 gap-10">
+        <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-4 py-20 gap-6 lg:gap-10">
 
           {/* LEFT — Strip preview */}
           <div
             ref={stripRef}
-            className="relative flex-shrink-0"
-            style={{ width: 520, userSelect: "none" }}
+            className="relative flex-shrink-0 w-full"
+            style={{ maxWidth: 460, userSelect: "none" }}
             onPointerDown={() => setSelectedUid(null)}
           >
             {photos[0] && (
@@ -340,7 +417,10 @@ export default function DesignerScreen() {
             />
 
             {stickers.map((sticker) => {
+              const stripW = stripRef.current?.offsetWidth || 520
+              const sizePx = (sticker.sizePct / 100) * stripW
               const isSelected = selectedUid === sticker.uid
+
               return (
                 <div
                   key={sticker.uid}
@@ -348,8 +428,8 @@ export default function DesignerScreen() {
                     position: "absolute",
                     left: `${sticker.x}%`,
                     top: `${sticker.y}%`,
-                    width: sticker.size,
-                    height: sticker.size,
+                    width: sizePx,
+                    height: sizePx,
                     zIndex: 10,
                     cursor: draggingUid === sticker.uid ? "grabbing" : "grab",
                   }}
@@ -361,8 +441,8 @@ export default function DesignerScreen() {
                   <Image
                     src={sticker.src}
                     alt=""
-                    width={sticker.size}
-                    height={sticker.size}
+                    width={sizePx}
+                    height={sizePx}
                     style={{
                       width: "100%",
                       height: "100%",
@@ -416,7 +496,7 @@ export default function DesignerScreen() {
           </div>
 
           {/* RIGHT — Sticker panel */}
-          <div style={{ width: 340 }}>
+          <div className="w-full" style={{ maxWidth: 380 }}>
             <h2 style={{
               fontFamily: "Positions, cursive",
               color: "#1BA5B2",
@@ -429,7 +509,7 @@ export default function DesignerScreen() {
             </h2>
             <p style={{
               fontFamily: "Poppins, sans-serif",
-              color: "#8F8C8B",
+              color: "#605D5C",
               fontSize: 13,
               textAlign: "center",
               marginBottom: 20
@@ -437,12 +517,7 @@ export default function DesignerScreen() {
               Move and place them anywhere in your photo
             </p>
 
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 6,
-              marginBottom: 28
-            }}>
+            <div className="sticker-grid">
               {STICKERS.map((sticker) => {
                 if (sticker.id === "remove") {
                   return (
@@ -504,6 +579,43 @@ export default function DesignerScreen() {
         </div>
 
         <canvas ref={canvasRef} style={{ display: "none" }} />
+
+        {/* Back Home confirmation modal */}
+        <AnimatePresence>
+          {showBackModal && (
+            <motion.div
+              className="modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowBackModal(false)}
+            >
+              <motion.div
+                className="modal-box"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 style={{ fontFamily: "Positions, cursive", color: "#16848E", fontSize: 24, marginBottom: 12 }}>
+                  Do you want to exit?
+                </h2>
+                <p style={{ color: "#605D5C", marginBottom: 24, fontSize: 16 }}>
+                  Your photos and edits won&apos;t be saved. Are you sure you want to leave?
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <button className="retake-link" onClick={() => setShowBackModal(false)}>
+                    Cancel
+                  </button>
+                  <Button icon="ri-arrow-left-line" onClick={handleBackHome}>
+                    Yes, Exit
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </main>
     </>
   )

@@ -154,7 +154,7 @@ export default function BoothScreen() {
         }
       `}</style>
 
-      <main className="min-h-screen relative bg-parchment-500">
+      <main className="min-h-screen relative bg-parchment-500 overflow-x-hidden">
         <FloatingBubbles />
 
         {/* Back Home — fixed top-left */}
@@ -176,10 +176,10 @@ export default function BoothScreen() {
           Back Home
         </Link>
 
-        <div className="flex flex-col items-center justify-center min-h-screen px-4 gap-1">
+        <div className="flex flex-col items-center justify-center min-h-screen px-4 py-20 gap-1">
 
           {/* Frame container */}
-          <div className="relative" style={{ maxWidth: 420, width: "100%" }}>
+          <div className="relative" style={{ maxWidth: 400, width: "100%" }}>
 
             {/* Frame SVG on top */}
             <Image
