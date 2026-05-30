@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aquabooth — Dive into the moment.",
+  title: "Aquabooth",
   description: "A fun aquarium-themed photo booth. Take photos, add stickers, and download your custom photo strip!",
   keywords: ["photo booth", "aquabooth", "aquarium", "photo strip", "stickers", "nayadesigns"],
   authors: [{ name: "nayadesigns" }],
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   openGraph: {
-    title: "Aquabooth — Dive into the moment.",
+    title: "Aquabooth",
     description: "Take photos, add stickers, and download your custom aquarium photo strip!",
     url: "https://aquabooth-nayadesigns.vercel.app",
     siteName: "aquabooth.nayadesigns",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aquabooth — Dive into the moment.",
+    title: "Aquabooth",
     description: "Take photos, add stickers, and download your custom aquarium photo strip!",
     images: ["https://aquabooth-nayadesigns.vercel.app/og-image.png"],
   },
